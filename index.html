@@ -371,12 +371,27 @@
                             margin: 0 auto !important;
                             background-color: #ffffff !important;
                         }
+                        /* Hide any popups or tooltips */
+                        .plotly-notifier, 
+                        .js-plotly-plot .plotly .modebar-container,
+                        .js-plotly-plot .plotly .modebar,
+                        .plotly-notifier,
+                        .js-plotly-plot .plotly .tooltip,
+                        [class*="tooltip"],
+                        [id*="tooltip"],
+                        .tippy-box,
+                        .tippy-content {
+                            display: none !important;
+                            opacity: 0 !important;
+                            visibility: hidden !important;
+                            pointer-events: none !important;
+                        }
                     `;
                     
                     // Append the style to the iframe's head
                     iframeDoc.head.appendChild(style);
                     
-                    // Add script to rotate the model to face the user
+                    // Add script to rotate the model to face the user and disable popups
                     const script = iframeDoc.createElement('script');
                     script.innerHTML = `
                         // Wait for Plotly to be fully loaded
@@ -393,7 +408,29 @@
                                         }
                                     };
                                     Plotly.relayout(gd, update);
-                                    console.log('Camera position updated');
+                                    
+                                    // Disable any popups or tooltips
+                                    if (window.Plotly && Plotly.newPlot) {
+                                        var originalNewPlot = Plotly.newPlot;
+                                        Plotly.newPlot = function() {
+                                            var args = Array.prototype.slice.call(arguments);
+                                            if (args.length >= 4 && typeof args[3] === 'object') {
+                                                args[3].displayModeBar = false;
+                                                args[3].showTips = false;
+                                                args[3].showLink = false;
+                                                args[3].modeBarButtonsToRemove = ['toImage', 'sendDataToCloud', 'editInChartStudio', 'zoom2d', 'pan2d', 'select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d', 'hoverClosestCartesian', 'hoverCompareCartesian', 'toggleSpikelines'];
+                                            }
+                                            return originalNewPlot.apply(this, args);
+                                        };
+                                    }
+                                    
+                                    // Remove any existing popups
+                                    var popups = document.querySelectorAll('.plotly-notifier, .js-plotly-plot .plotly .modebar-container, [class*="tooltip"], [id*="tooltip"]');
+                                    popups.forEach(function(popup) {
+                                        if (popup && popup.parentNode) {
+                                            popup.parentNode.removeChild(popup);
+                                        }
+                                    });
                                 } else {
                                     console.log('Plotly layout not found');
                                 }
