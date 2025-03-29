@@ -227,11 +227,15 @@
                 loadingElement.style.display = 'block';
                 loadingElement.innerHTML = `
                     <div class="spinner"></div>
-                    Loading plushie model ${formattedId}...
+                    Loading plushie model ${formattedId}...<br>
+                    URL: ${url}
                 `;
                 
+                console.log(`Attempting to load model from: ${url}`);
                 const response = await fetch(url);
                 if (!response.ok) {
+                    console.error(`Failed to load model: ${response.status} ${response.statusText}`);
+                    console.error(`URL attempted: ${url}`);
                     throw new Error(`Failed to load model (${response.status} ${response.statusText}). Please ensure the file exists and the server is running.`);
                 }
                 
