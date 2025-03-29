@@ -119,6 +119,25 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Check if we're on GitHub Pages
+            const isGitHubPages = window.location.hostname.includes('github.io');
+            
+            if (isGitHubPages) {
+                const notice = document.createElement('div');
+                notice.style.background = 'rgba(255, 87, 34, 0.1)';
+                notice.style.padding = '10px';
+                notice.style.borderRadius = '4px';
+                notice.style.marginBottom = '20px';
+                notice.style.border = '1px solid #ff5722';
+                notice.innerHTML = `
+                    <strong>GitHub Pages Notice:</strong> 3D models may not load properly on GitHub Pages due to file size limitations.
+                    For the full experience, please clone the repository and run it locally using the Python server.
+                `;
+                
+                const container = document.querySelector('.container');
+                container.insertBefore(notice, document.querySelector('.highlight').nextElementSibling);
+            }
+            
             const grid = document.getElementById('plushies-grid');
             const sheetSelector = document.getElementById('sheet-selector');
             

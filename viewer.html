@@ -224,12 +224,24 @@
                     Loading plushie model ${formattedId}...
                 `;
                 
-                const response = await fetch(url);
+                console.log(`Attempting to fetch: ${url}`);
+                
+                const response = await fetch(url, {
+                    cache: 'no-store',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                console.log(`Response status: ${response.status}`);
+                
                 if (!response.ok) {
                     throw new Error(`Failed to load model (${response.status} ${response.statusText}). Please ensure the file exists and the server is running.`);
                 }
                 
                 const data = await response.json();
+                console.log(`Data loaded successfully, voxel count: ${data.m?.voxel_count || 'unknown'}`);
+                
                 if (!data.p || !data.c || !data.i || !data.m) {
                     throw new Error('Invalid voxel data format');
                 }
@@ -281,7 +293,26 @@
 
             } catch (error) {
                 console.error('Error loading voxel model:', error);
-                loadingElement.innerHTML = `Error: ${error.message}`;
+                
+                // Check if we're on GitHub Pages
+                const isGitHubPages = window.location.hostname.includes('github.io');
+                
+                if (isGitHubPages) {
+                    loadingElement.innerHTML = `
+                        <div style="color: #ff5722; margin-bottom: 15px;">
+                            <strong>GitHub Pages Limitation</strong>
+                        </div>
+                        <p>GitHub Pages can't directly serve the large voxel model files.</p>
+                        <p>To view the 3D models, please:</p>
+                        <ul style="text-align: left; margin: 10px auto; display: inline-block;">
+                            <li>Clone the repository</li>
+                            <li>Run the local server: <code>python server.py</code></li>
+                            <li>Access: <a href="http://localhost:8000">http://localhost:8000</a></li>
+                        </ul>
+                    `;
+                } else {
+                    loadingElement.innerHTML = `Error: ${error.message}`;
+                }
             }
         }
 
