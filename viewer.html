@@ -68,7 +68,7 @@
 </head>
 <body>
     <div id="controls">
-        <button onclick="window.location.href='index.html'">Back to Gallery</button>
+        <button onclick="window.location.href=(window.location.pathname.includes('/plushies') ? '/plushies' : '') + '/index.html'">Back to Gallery</button>
     </div>
     <div id="loading">
         <div class="spinner"></div>
@@ -217,9 +217,12 @@
                 // Format to ensure leading zeros (now using 3 digits)
                 const formattedId = spriteId.toString().padStart(3, '0');
                 
-                // Fix: Get the base path dynamically for GitHub Pages compatibility
-                const basePath = window.location.pathname.includes('/plushies/') ? '/plushies/' : '/';
-                const url = `${basePath}voxels/sprite_${formattedId}.vox.json`;
+                // Get base URL for GitHub Pages compatibility
+                const baseUrl = window.location.pathname.includes('/plushies') 
+                    ? '/plushies' 
+                    : '';
+                
+                const url = `${baseUrl}/voxels/sprite_${formattedId}.vox.json`;
                 
                 loadingElement.style.display = 'block';
                 loadingElement.innerHTML = `
