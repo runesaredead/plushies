@@ -3,219 +3,191 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pizza Plushies Powered by Mariodin</title>
+    <title>Plushie Gallery</title>
     <style>
         body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
             margin: 0;
-            padding: 0;
-            font-family: 'Arial', sans-serif;
-            background-color: #121212;
-            color: white;
+            padding: 20px;
         }
         .container {
-            width: 100%;
             max-width: 1200px;
             margin: 0 auto;
-            padding: 2rem 1rem;
-            text-align: center;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            font-weight: 300;
+            color: #333;
+            text-align: center;
         }
-        p {
-            color: #ccc;
-            margin-bottom: 2rem;
-        }
-        .highlight {
-            color: #ff5722;
-            margin: 1rem 0 2rem 0;
-        }
-        .grid {
+        .gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
         }
         .plushie-card {
-            background-color: #1e1e1e;
-            border-radius: 10px;
-            overflow: hidden;
-            cursor: pointer;
+            background-color: #fff;
+            border-radius: 5px;
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             transition: transform 0.3s ease;
-            aspect-ratio: 1/1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            text-align: center;
         }
         .plushie-card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
         .plushie-image {
-            width: 120px;
-            height: 120px;
-            border-radius: 4px;
-            background-color: #ff5722;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-        .plushie-image img {
-            width: 80%;
-            height: 80%;
-            object-fit: contain;
-        }
-        iframe {
             width: 100%;
-            height: 100%;
-            border: none;
+            height: auto;
+            border-radius: 5px;
         }
-        .sheet-selector {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 2rem;
-            gap: 1rem;
+        .plushie-name {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #333;
         }
-        .sheet-button {
-            background-color: #333;
+        .view-button {
+            display: block;
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: #4CAF50;
             color: white;
             border: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: 4px;
+            border-radius: 3px;
+            text-decoration: none;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .filters {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .filter-button {
+            margin: 5px;
+            padding: 8px 15px;
+            background-color: #ddd;
+            border: none;
+            border-radius: 20px;
             cursor: pointer;
             transition: background-color 0.3s;
         }
-        .sheet-button.active {
-            background-color: #ff5722;
-        }
-        .sheet-button:hover {
-            background-color: #444;
-        }
-        .sheet-button.active:hover {
-            background-color: #e64a19;
+        .filter-button.active {
+            background-color: #4CAF50;
+            color: white;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Pizza Plushies Powered by Mariodin</h1>
-        <p>An interactive exhibition of 3D voxel art. Click on any piece to explore the full interactive model.</p>
-        <div class="highlight">The rest of the 1500 ninjas are coming soon! Keep an eye out for yours.</div>
+        <h1>Plushie Voxel Models</h1>
         
-        <div class="sheet-selector" id="sheet-selector">
-            <button class="sheet-button active" data-sheet="all">All Plushies</button>
-            <button class="sheet-button" data-sheet="0">Sheet 1</button>
-            <button class="sheet-button" data-sheet="1">Sheet 2</button>
-            <button class="sheet-button" data-sheet="2">Sheet 3</button>
-            <button class="sheet-button" data-sheet="3">Sheet 4</button>
+        <div class="filters">
+            <button class="filter-button active" data-sheet="all">All Plushies</button>
+            <button class="filter-button" data-sheet="sheet1">Sheet 1</button>
+            <button class="filter-button" data-sheet="sheet2">Sheet 2</button>
+            <button class="filter-button" data-sheet="sheet3">Sheet 3</button>
+            <button class="filter-button" data-sheet="sheet4">Sheet 4</button>
         </div>
         
-        <div class="grid" id="plushies-grid">
+        <div class="gallery" id="plushie-gallery">
             <!-- Plushie cards will be generated here -->
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const grid = document.getElementById('plushies-grid');
-            const sheetSelector = document.getElementById('sheet-selector');
+            const gallery = document.getElementById('plushie-gallery');
+            const filterButtons = document.querySelectorAll('.filter-button');
             
-            // Sheet configurations with correct sprite counts
-            const sheets = [
-                { id: 0, rows: 6, cols: 6, baseIndex: 0 },     // 36 sprites
-                { id: 1, rows: 7, cols: 7, baseIndex: 36 },    // 49 sprites
-                { id: 2, rows: 7, cols: 7, baseIndex: 85 },    // 49 sprites
-                { id: 3, rows: 7, cols: 7, baseIndex: 134 }    // 49 sprites
-            ];
+            // Define sheet configurations
+            const sheetConfig = {
+                sheet1: { start: 0, end: 35, format: '%03d' },
+                sheet2: { start: 36, end: 84, format: '%03d' },
+                sheet3: { start: 85, end: 133, format: '%03d' },
+                sheet4: { start: 134, end: 182, format: '%03d' }
+            };
             
-            // Calculate total sprites
-            const totalSprites = sheets.reduce((sum, sheet) => sum + (sheet.rows * sheet.cols), 0);
+            // Create all plushie cards
+            createAllPlushieCards();
             
-            let currentSheet = 'all';
+            // Add event listeners to filter buttons
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Update active button
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Filter plushies
+                    const sheet = this.getAttribute('data-sheet');
+                    filterPlushies(sheet);
+                });
+            });
             
-            // Function to create a plushie card
-            function createPlushieCard(index) {
+            function createAllPlushieCards() {
+                let allPlushies = [];
+                
+                // Generate plushies for each sheet
+                Object.keys(sheetConfig).forEach(sheet => {
+                    const config = sheetConfig[sheet];
+                    for (let i = config.start; i <= config.end; i++) {
+                        const spriteId = i.toString().padStart(3, '0');
+                        allPlushies.push({
+                            id: spriteId,
+                            sheet: sheet
+                        });
+                    }
+                });
+                
+                // Create and append card for each plushie
+                allPlushies.forEach(plushie => {
+                    const card = createPlushieCard(plushie);
+                    gallery.appendChild(card);
+                });
+            }
+            
+            function createPlushieCard(plushie) {
                 const card = document.createElement('div');
                 card.className = 'plushie-card';
-                card.setAttribute('data-sprite-id', index);
+                card.dataset.sheet = plushie.sheet;
                 
-                // Determine which sheet this sprite belongs to
-                let sheetNumber = 0;
-                for (let i = sheets.length - 1; i >= 0; i--) {
-                    if (index >= sheets[i].baseIndex) {
-                        sheetNumber = sheets[i].id;
-                        break;
-                    }
-                }
-                card.setAttribute('data-sheet', sheetNumber);
-                
-                // Create image container
-                const imageDiv = document.createElement('div');
-                imageDiv.className = 'plushie-image';
-                
-                // Add sprite image
                 const img = document.createElement('img');
-                img.src = `thumbnails/sprite_${index.toString().padStart(3, '0')}.png`;
-                img.alt = `Plushie ${index}`;
-                img.onerror = function() {
-                    this.style.display = 'none';
-                    imageDiv.innerHTML = `<div style="padding: 10px; color: #aaa;">Sprite ${index} not found</div>`;
-                };
-                imageDiv.appendChild(img);
+                img.className = 'plushie-image';
+                img.src = `preview_sprites/sprite_${plushie.id}.png`;
+                img.alt = `Plushie ${plushie.id}`;
                 
-                card.appendChild(imageDiv);
+                const name = document.createElement('div');
+                name.className = 'plushie-name';
+                name.textContent = `Plushie ${plushie.id}`;
                 
-                // Add click handler to open the voxel model viewer
-                card.addEventListener('click', function() {
-                    const spriteId = this.getAttribute('data-sprite-id');
-                    window.open(`viewer.html?sprite=${spriteId}`, '_blank');
-                });
+                const viewButton = document.createElement('a');
+                viewButton.className = 'view-button';
+                viewButton.href = `viewer.html?id=${plushie.id}`;
+                viewButton.textContent = 'View 3D Model';
+                viewButton.target = '_blank';
+                
+                card.appendChild(img);
+                card.appendChild(name);
+                card.appendChild(viewButton);
                 
                 return card;
             }
             
-            // Function to display plushies based on selected sheet
-            function displayPlushies(sheetFilter) {
-                grid.innerHTML = '';
+            function filterPlushies(sheet) {
+                const cards = document.querySelectorAll('.plushie-card');
                 
-                if (sheetFilter === 'all') {
-                    // Show all sprites
-                    for (let i = 0; i < totalSprites; i++) {
-                        const card = createPlushieCard(i);
-                        grid.appendChild(card);
+                cards.forEach(card => {
+                    if (sheet === 'all' || card.dataset.sheet === sheet) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
                     }
-                } else {
-                    // Show only sprites from selected sheet
-                    const selectedSheet = sheets[parseInt(sheetFilter)];
-                    const startIndex = selectedSheet.baseIndex;
-                    const endIndex = startIndex + (selectedSheet.rows * selectedSheet.cols);
-                    
-                    for (let i = startIndex; i < endIndex; i++) {
-                        const card = createPlushieCard(i);
-                        grid.appendChild(card);
-                    }
-                }
+                });
             }
-            
-            // Initialize with all plushies
-            displayPlushies(currentSheet);
-            
-            // Add sheet selector functionality
-            sheetSelector.addEventListener('click', function(e) {
-                if (e.target.classList.contains('sheet-button')) {
-                    // Update active button
-                    document.querySelectorAll('.sheet-button').forEach(btn => {
-                        btn.classList.remove('active');
-                    });
-                    e.target.classList.add('active');
-                    
-                    // Update displayed plushies
-                    currentSheet = e.target.getAttribute('data-sheet');
-                    displayPlushies(currentSheet);
-                }
-            });
         });
     </script>
 </body>
