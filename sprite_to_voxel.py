@@ -7,7 +7,7 @@ from scipy.ndimage import gaussian_filter
 def load_spritesheet(path):
     return Image.open(path)
 
-def split_spritesheet(sheet, rows=6, cols=6):
+def split_spritesheet(sheet, rows=6, cols=6, top_crop=5):
     width = sheet.width // cols
     height = sheet.height // rows
     sprites = []
@@ -18,7 +18,16 @@ def split_spritesheet(sheet, rows=6, cols=6):
             top = row * height
             right = left + width
             bottom = top + height
+            
+            # Crop the sprite
             sprite = sheet.crop((left, top, right, bottom))
+            
+            # Apply additional top crop if needed
+            if top_crop > 0:
+                sprite_width, sprite_height = sprite.size
+                if sprite_height > top_crop * 2:  # Make sure we don't crop too much
+                    sprite = sprite.crop((0, top_crop, sprite_width, sprite_height))
+            
             sprites.append(sprite)
     
     return sprites
@@ -84,16 +93,29 @@ def add_puffy_voxels(voxels, x, y, z, r, g, b, darkness, width, height, local_th
         })
 
 def create_3d_voxels(sprite, resolution=80, depth=9):
-    """Create 3D voxels by mirroring the front half to the back half"""
+    """Create 3D voxels by mirroring the front half to the back half with improved rounding"""
     # Resize sprite to target resolution
     sprite = sprite.resize((resolution, resolution), Image.Resampling.LANCZOS)
     sprite_array = np.array(sprite)
     
+    # Check if sprite has any opaque pixels
+    if np.max(sprite_array[:, :, 3]) <= 128:
+        print("  Warning: Sprite appears to be fully transparent")
+    
     width, height = sprite.size
     voxels = []
     
-    # Calculate thickness map with stronger smoothing for simpler surfaces
-    thickness = calculate_thickness_map(sprite_array, smooth_factor=2.5)
+    # Calculate thickness map with stronger smoothing for rounder surfaces
+    thickness = calculate_thickness_map(sprite_array, smooth_factor=1.8)
+    
+    # Adjust depth based on sprite size (for larger characters)
+    actual_pixel_count = np.sum(sprite_array[:, :, 3] > 128)
+    fill_ratio = actual_pixel_count / (width * height)
+    
+    # Scale depth slightly based on fill ratio - fuller sprites get slightly less depth
+    adjusted_depth = max(5, min(depth, round(depth * (1.1 - fill_ratio * 0.2))))
+    if adjusted_depth != depth:
+        print(f"  Adjusting depth to {adjusted_depth} (fill ratio: {fill_ratio:.2f})")
     
     # FIRST PASS: Create only the front half voxels
     front_voxels = []
@@ -105,7 +127,7 @@ def create_3d_voxels(sprite, resolution=80, depth=9):
                 local_thickness = thickness[y, x]
                 
                 # Calculate local depth (only need half the depth now)
-                local_depth = int(depth * local_thickness * 0.5)  # Reduced since we'll mirror
+                local_depth = int(adjusted_depth * local_thickness * 0.5)  # Reduced since we'll mirror
                 if local_depth < 2:  # Ensure minimum thickness for half
                     local_depth = 2
                     
@@ -152,7 +174,7 @@ def create_3d_voxels(sprite, resolution=80, depth=9):
                 
                 if is_edge:
                     local_thickness = thickness[y, x]
-                    local_depth = int(depth * local_thickness * 0.5)
+                    local_depth = int(adjusted_depth * local_thickness * 0.5)
                     if local_depth < 2:
                         local_depth = 2
                     
@@ -281,27 +303,46 @@ def save_voxel_file(voxels, filename):
     print(f'  Voxels: {len(voxels)}, Unique colors: {len(color_map)}')
     print(f'  File size: {actual_size/1024:.1f}KB')
 
-def process_spritesheet(sheet_path, sheet_number=0, base_index=0, rows=6, cols=6):
+def process_spritesheet(sheet_path, sheet_number=0, base_index=0, rows=6, cols=6, top_crop=5):
     """Process a single spritesheet and generate voxel models"""
     # Load and split spritesheet
-    sheet = load_spritesheet(sheet_path)
-    sprites = split_spritesheet(sheet, rows, cols)
-    total_sprites = len(sprites)
-    
-    print(f'Processing {total_sprites} sprites from {sheet_path}...\n')
-    
-    for i, sprite in enumerate(sprites):
-        sprite_index = base_index + i
-        try:
-            print(f'[{i+1}/{total_sprites}] Processing sprite {sprite_index}...')
-            voxels = create_3d_voxels(sprite, resolution=80, depth=9)
-            filename = f'voxels/sprite_{sprite_index:03d}.vox.json'
-            save_voxel_file(voxels, filename)
+    try:
+        sheet = load_spritesheet(sheet_path)
+        if sheet is None:
+            print(f"Failed to load sheet: {sheet_path}")
+            return 0
             
-        except Exception as e:
-            print(f'Error processing sprite {sprite_index}: {str(e)}')
-    
-    return total_sprites
+        # Validate sheet dimensions
+        expected_width = cols * sheet.width // cols  # Should equal sheet.width if cols divides evenly
+        expected_height = rows * sheet.height // rows  # Should equal sheet.height if rows divides evenly
+        
+        if sheet.width != expected_width or sheet.height != expected_height:
+            print(f"WARNING: Sheet {sheet_path} dimensions ({sheet.width}x{sheet.height}) may not be exactly divisible by grid ({rows}x{cols})")
+            
+        sprites = split_spritesheet(sheet, rows, cols, top_crop)
+        total_sprites = len(sprites)
+        
+        print(f'Processing {total_sprites} sprites from {sheet_path}...\n')
+        
+        success_count = 0
+        for i, sprite in enumerate(sprites):
+            sprite_index = base_index + i
+            try:
+                print(f'[{i+1}/{total_sprites}] Processing sprite {sprite_index}...')
+                voxels = create_3d_voxels(sprite, resolution=80, depth=9)
+                filename = f'voxels/sprite_{sprite_index:03d}.vox.json'
+                save_voxel_file(voxels, filename)
+                success_count += 1
+                
+            except Exception as e:
+                print(f'Error processing sprite {sprite_index}: {str(e)}')
+                
+        print(f"Successfully processed {success_count}/{total_sprites} sprites from {sheet_path}")
+        return total_sprites
+        
+    except Exception as e:
+        print(f'Error in spritesheet processing for {sheet_path}: {str(e)}')
+        return 0
 
 def main():
     # Create output directory
@@ -317,7 +358,8 @@ def main():
         {'path': 'pizzasheet.png', 'sheet_number': 0, 'rows': 6, 'cols': 6},
         {'path': 'pizzasheet2.png', 'sheet_number': 1, 'rows': 7, 'cols': 7},
         {'path': 'pizzasheet3.png', 'sheet_number': 2, 'rows': 7, 'cols': 7},
-        {'path': 'pizzasheet4.png', 'sheet_number': 3, 'rows': 7, 'cols': 7}
+        {'path': 'pizzasheet4.png', 'sheet_number': 3, 'rows': 7, 'cols': 7},
+        {'path': 'pizzasheet5.png', 'sheet_number': 4, 'rows': 7, 'cols': 7}
     ]
     
     # Calculate base indices correctly
@@ -336,7 +378,13 @@ def main():
         
         try:
             print(f'Processing sheet {path} with grid {rows}x{cols}...')
-            sprites_in_sheet = process_spritesheet(path, sheet_number, base_index, rows, cols)
+            
+            # Check if file exists before processing
+            if not os.path.exists(path):
+                print(f"WARNING: Sheet file {path} does not exist. Skipping.")
+                continue
+                
+            sprites_in_sheet = process_spritesheet(path, sheet_number, base_index, rows, cols, top_crop=5)
             total_sprites += sprites_in_sheet
         except Exception as e:
             print(f'Error processing sheet {path}: {str(e)}')
