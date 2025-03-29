@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Plushie Voxel Viewer</title>
+    <style>
+        body { 
+            margin: 0;
+            overflow: hidden;
+            background-color: #121212;
+        }
+        canvas { 
+            display: block;
+        }
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: monospace;
+            color: #aaa;
+            text-align: center;
+            background-color: rgba(0,0,0,0.7);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #333;
+            border-top: 3px solid #ff5722;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            animation: spin 1s linear infinite;
+        }
+        #controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            background-color: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 10px;
+            font-family: monospace;
+            color: #aaa;
+        }
+        button {
+            background-color: #ff5722;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        button:hover {
+            background-color: #e64a19;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <button onclick="window.location.href='index.html'">Back to Gallery</button>
+    </div>
+    <div id="loading">
+        <div class="spinner"></div>
+        Loading plushie model...
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.162.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.162.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // Scene setup
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x121212);
+        
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+        camera.position.set(200, 200, 200);
+        
+        const renderer = new THREE.WebGLRenderer({ 
+            antialias: true,
+            alpha: true
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+        // Lighting setup for dark theme
+        const ambientLight = new THREE.AmbientLight(0x808080);
+        scene.add(ambientLight);
+
+        const lights = [
+            { pos: [1, 2, 3], intensity: 1.2, color: 0xffffff },
+            { pos: [-1, 2, 3], intensity: 0.9, color: 0xffffff },
+            { pos: [1, 2, -3], intensity: 0.9, color: 0xffffff },
+            { pos: [-1, 2, -3], intensity: 0.9, color: 0xffffff },
+            { pos: [0, -2, 0], intensity: 0.6, color: 0xffffff }
+        ].map(({ pos, intensity, color }) => {
+            const light = new THREE.DirectionalLight(color, intensity);
+            light.position.set(...pos);
+            return light;
+        });
+        
+        lights.forEach(light => scene.add(light));
+
+        // Controls
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.screenSpacePanning = false;
+        controls.minDistance = 1;
+        controls.maxDistance = 1000;
+        controls.maxPolarAngle = Math.PI;
+
+        // Animation state
+        let isAnimating = false;
+        let animationStartTime = 0;
+        const animationDuration = 2000; // 2 seconds
+
+        // Create geometry for voxels
+        const boxGeometry = new THREE.BoxGeometry(1.8, 1.8, 1.8);
+
+        // Keep track of current model
+        let currentModel = null;
+
+        function startCameraAnimation(center) {
+            // Start position (isometric view)
+            const startPos = new THREE.Vector3(
+                center.x + 200,
+                center.y + 200,
+                center.z + 200
+            );
+            
+            // End position (front view)
+            const endPos = new THREE.Vector3(
+                center.x,
+                center.y - 20,
+                center.z + 180
+            );
+
+            camera.position.copy(startPos);
+            controls.target.copy(center);
+            
+            isAnimating = true;
+            animationStartTime = Date.now();
+            controls.enabled = false;
+
+            // Store final positions for reset functionality
+            camera.userData.finalPosition = endPos.clone();
+            camera.userData.finalTarget = center.clone();
+        }
+
+        function updateCameraAnimation() {
+            if (!isAnimating) return;
+
+            const elapsed = Date.now() - animationStartTime;
+            let progress = Math.min(elapsed / animationDuration, 1);
+
+            // Smooth easing function
+            progress = progress < 0.5
+                ? 4 * progress * progress * progress
+                : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+            // Interpolate camera position
+            camera.position.lerpVectors(
+                new THREE.Vector3(
+                    camera.userData.finalTarget.x + 200,
+                    camera.userData.finalTarget.y + 200,
+                    camera.userData.finalTarget.z + 200
+                ),
+                camera.userData.finalPosition,
+                progress
+            );
+
+            // Add a slight swing effect
+            if (progress < 1) {
+                const swing = Math.sin(progress * Math.PI * 2) * (1 - progress) * 20;
+                camera.position.y += swing;
+                camera.position.x += swing * 0.5;
+            }
+
+            controls.update();
+
+            if (progress >= 1) {
+                isAnimating = false;
+                controls.enabled = true;
+            }
+        }
+
+        async function loadModel(spriteId) {
+            const loadingElement = document.getElementById('loading');
+            try {
+                // Remove current model if exists
+                if (currentModel) {
+                    scene.remove(currentModel);
+                    currentModel = null;
+                }
+
+                // Format to ensure leading zeros (now using 3 digits)
+                const formattedId = spriteId.toString().padStart(3, '0');
+                const url = `./voxels/sprite_${formattedId}.vox.json`;
+                
+                loadingElement.style.display = 'block';
+                loadingElement.innerHTML = `
+                    <div class="spinner"></div>
+                    Loading plushie model ${formattedId}...
+                `;
+                
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Failed to load model (${response.status} ${response.statusText}). Please ensure the file exists and the server is running.`);
+                }
+                
+                const data = await response.json();
+                if (!data.p || !data.c || !data.i || !data.m) {
+                    throw new Error('Invalid voxel data format');
+                }
+
+                // Create color palette with enhanced brightness for dark theme
+                const colorPalette = [];
+                for (let i = 0; i < data.c.length; i += 3) {
+                    const color = new THREE.Color(
+                        data.c[i] / 255,
+                        data.c[i + 1] / 255,
+                        data.c[i + 2] / 255
+                    );
+                    // Enhance colors more significantly
+                    color.multiplyScalar(1.3);
+                    colorPalette.push(color);
+                }
+
+                // Create instanced mesh with enhanced material for better visibility
+                const material = new THREE.MeshPhongMaterial({
+                    shininess: 12,
+                    specular: 0x666666,
+                    flatShading: false,
+                    emissive: 0x222222,
+                    emissiveIntensity: 0.1
+                });
+
+                const instancedMesh = new THREE.InstancedMesh(boxGeometry, material, data.m.voxel_count);
+                const matrix = new THREE.Matrix4();
+                
+                // Set positions and colors
+                for (let i = 0; i < data.m.voxel_count; i++) {
+                    const x = data.p[i * 3];
+                    const y = data.p[i * 3 + 1];
+                    const z = data.p[i * 3 + 2];
+                    matrix.setPosition(x, y, z);
+                    instancedMesh.setMatrixAt(i, matrix);
+                    instancedMesh.setColorAt(i, colorPalette[data.i[i]]);
+                }
+
+                scene.add(instancedMesh);
+                currentModel = instancedMesh;
+
+                // Center camera on model and start animation
+                const center = new THREE.Vector3(80, 80, 0);
+                startCameraAnimation(center);
+
+                // Hide loading screen
+                loadingElement.style.display = 'none';
+
+            } catch (error) {
+                console.error('Error loading voxel model:', error);
+                loadingElement.innerHTML = `Error: ${error.message}`;
+            }
+        }
+
+        // Get sprite ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const spriteId = urlParams.get('sprite');
+        
+        if (spriteId !== null) {
+            loadModel(spriteId);
+        } else {
+            document.getElementById('loading').innerHTML = "Error: No sprite ID specified";
+        }
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            updateCameraAnimation();
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Add double-click to reset view
+        renderer.domElement.addEventListener('dblclick', () => {
+            if (camera.userData.finalPosition && camera.userData.finalTarget) {
+                camera.position.copy(camera.userData.finalPosition);
+                controls.target.copy(camera.userData.finalTarget);
+                controls.update();
+            }
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Start animation loop
+        animate();
+    </script>
+</body>
+</html> 
