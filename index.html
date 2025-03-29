@@ -3,191 +3,270 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plushie Gallery</title>
+    <title>Pizza Plushies Powered by Mariodin</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            background-color: #1a1a1a;
+            color: white;
             margin: 0;
-            padding: 20px;
+            padding: 0;
         }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
+        
+        header {
             text-align: center;
+            padding: 40px 20px;
+            border-bottom: 1px solid #333;
         }
+        
+        h1 {
+            font-size: 36px;
+            font-weight: normal;
+            margin-bottom: 10px;
+        }
+        
+        p {
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            color: #ccc;
+        }
+        
+        .highlight {
+            color: #ff5722;
+        }
+        
+        .nav {
+            text-align: center;
+            padding: 10px 0;
+            background-color: #212121;
+            border-bottom: 1px solid #333;
+        }
+        
+        .nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 10px;
+            font-size: 14px;
+        }
+        
         .gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
         }
+        
         .plushie-card {
-            background-color: #fff;
-            border-radius: 5px;
-            padding: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
-            text-align: center;
+            background-color: #212121;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            transition: transform 0.3s;
+            position: relative;
         }
+        
         .plushie-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
-        .plushie-image {
-            width: 100%;
-            height: auto;
-            border-radius: 5px;
-        }
-        .plushie-name {
-            margin-top: 10px;
-            font-size: 14px;
-            color: #333;
-        }
-        .view-button {
-            display: block;
-            margin-top: 10px;
-            padding: 5px 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 3px;
-            text-decoration: none;
-            font-size: 12px;
-            cursor: pointer;
-        }
-        .filters {
+        
+        .plushie-thumbnail {
+            width: 120px;
+            height: 120px;
+            background-color: #ff5722;
+            border-radius: 4px;
             margin-bottom: 20px;
-            text-align: center;
         }
-        .filter-button {
-            margin: 5px;
-            padding: 8px 15px;
-            background-color: #ddd;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
+        
+        .plushie-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .explore-btn {
+            display: inline-block;
+            background-color: rgba(255, 87, 34, 0.8);
+            color: white;
+            padding: 8px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 14px;
+            margin-top: 10px;
             transition: background-color 0.3s;
         }
-        .filter-button.active {
-            background-color: #4CAF50;
-            color: white;
+        
+        .explore-btn:hover {
+            background-color: #ff5722;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Plushie Voxel Models</h1>
-        
-        <div class="filters">
-            <button class="filter-button active" data-sheet="all">All Plushies</button>
-            <button class="filter-button" data-sheet="sheet1">Sheet 1</button>
-            <button class="filter-button" data-sheet="sheet2">Sheet 2</button>
-            <button class="filter-button" data-sheet="sheet3">Sheet 3</button>
-            <button class="filter-button" data-sheet="sheet4">Sheet 4</button>
-        </div>
-        
-        <div class="gallery" id="plushie-gallery">
-            <!-- Plushie cards will be generated here -->
-        </div>
+    <header>
+        <h1>Pizza Plushies Powered by Mariodin</h1>
+        <p>An interactive exhibition of 3D voxel art. Click on any piece to explore the full interactive model.</p>
+        <p class="highlight">The rest of the 1500 ninjas are coming soon! Keep an eye out for yours.</p>
+    </header>
+    
+    <div class="nav">
+        <a href="#">All Plushies</a>
+        <a href="#">Sheet 1</a>
+        <a href="#">Sheet 2</a>
+        <a href="#">Sheet 3</a>
+        <a href="#">Sheet 4</a>
     </div>
-
+    
+    <div class="gallery">
+        <!-- Start with first 8 plushies -->
+        <div class="plushie-card">
+            <div class="plushie-thumbnail">
+                <img src="thumbnails/sprite_083.png" alt="Plushie 83">
+            </div>
+            <a href="viewer.html?sprite=83" class="explore-btn">EXPLORE</a>
+        </div>
+        
+        <div class="plushie-card">
+            <div class="plushie-thumbnail">
+                <img src="thumbnails/sprite_084.png" alt="Plushie 84">
+            </div>
+            <a href="viewer.html?sprite=84" class="explore-btn">EXPLORE</a>
+        </div>
+        
+        <div class="plushie-card">
+            <div class="plushie-thumbnail">
+                <img src="thumbnails/sprite_085.png" alt="Plushie 85">
+            </div>
+            <a href="viewer.html?sprite=85" class="explore-btn">EXPLORE</a>
+        </div>
+        
+        <div class="plushie-card">
+            <div class="plushie-thumbnail">
+                <img src="thumbnails/sprite_086.png" alt="Plushie 86">
+            </div>
+            <a href="viewer.html?sprite=86" class="explore-btn">EXPLORE</a>
+        </div>
+        
+        <div class="plushie-card">
+            <div class="plushie-thumbnail">
+                <img src="thumbnails/sprite_087.png" alt="Plushie 87">
+            </div>
+            <a href="viewer.html?sprite=87" class="explore-btn">EXPLORE</a>
+        </div>
+        
+        <div class="plushie-card">
+            <div class="plushie-thumbnail">
+                <img src="thumbnails/sprite_088.png" alt="Plushie 88">
+            </div>
+            <a href="viewer.html?sprite=88" class="explore-btn">EXPLORE</a>
+        </div>
+        
+        <div class="plushie-card">
+            <div class="plushie-thumbnail">
+                <img src="thumbnails/sprite_089.png" alt="Plushie 89">
+            </div>
+            <a href="viewer.html?sprite=89" class="explore-btn">EXPLORE</a>
+        </div>
+        
+        <div class="plushie-card">
+            <div class="plushie-thumbnail">
+                <img src="thumbnails/sprite_090.png" alt="Plushie 90">
+            </div>
+            <a href="viewer.html?sprite=90" class="explore-btn">EXPLORE</a>
+        </div>
+        
+        <!-- Add more plushies dynamically with JavaScript -->
+    </div>
+    
     <script>
+        // Get all plushie files and dynamically add more to the gallery
         document.addEventListener('DOMContentLoaded', function() {
-            const gallery = document.getElementById('plushie-gallery');
-            const filterButtons = document.querySelectorAll('.filter-button');
+            const gallery = document.querySelector('.gallery');
+            const plushiesPerPage = 32; // Show 32 plushies at a time
+            const startIndex = 83; // We already added the first 8
+            const endIndex = 182; // Last sprite index
             
-            // Define sheet configurations
-            const sheetConfig = {
-                sheet1: { start: 0, end: 35, format: '%03d' },
-                sheet2: { start: 36, end: 84, format: '%03d' },
-                sheet3: { start: 85, end: 133, format: '%03d' },
-                sheet4: { start: 134, end: 182, format: '%03d' }
-            };
-            
-            // Create all plushie cards
-            createAllPlushieCards();
-            
-            // Add event listeners to filter buttons
-            filterButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    // Update active button
-                    filterButtons.forEach(btn => btn.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    // Filter plushies
-                    const sheet = this.getAttribute('data-sheet');
-                    filterPlushies(sheet);
-                });
-            });
-            
-            function createAllPlushieCards() {
-                let allPlushies = [];
+            // Function to create a plushie card
+            function createPlushieCard(spriteIndex) {
+                // Format sprite index with leading zeros
+                const formattedIndex = spriteIndex.toString().padStart(3, '0');
                 
-                // Generate plushies for each sheet
-                Object.keys(sheetConfig).forEach(sheet => {
-                    const config = sheetConfig[sheet];
-                    for (let i = config.start; i <= config.end; i++) {
-                        const spriteId = i.toString().padStart(3, '0');
-                        allPlushies.push({
-                            id: spriteId,
-                            sheet: sheet
-                        });
-                    }
-                });
-                
-                // Create and append card for each plushie
-                allPlushies.forEach(plushie => {
-                    const card = createPlushieCard(plushie);
-                    gallery.appendChild(card);
-                });
-            }
-            
-            function createPlushieCard(plushie) {
+                // Create card elements
                 const card = document.createElement('div');
                 card.className = 'plushie-card';
-                card.dataset.sheet = plushie.sheet;
+                
+                const thumbnail = document.createElement('div');
+                thumbnail.className = 'plushie-thumbnail';
                 
                 const img = document.createElement('img');
-                img.className = 'plushie-image';
-                img.src = `preview_sprites/sprite_${plushie.id}.png`;
-                img.alt = `Plushie ${plushie.id}`;
+                img.src = `thumbnails/sprite_${formattedIndex}.png`;
+                img.alt = `Plushie ${spriteIndex}`;
+                img.onerror = function() {
+                    // If image fails to load, show a placeholder
+                    this.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+                    this.style.backgroundColor = '#ff5722';
+                };
                 
-                const name = document.createElement('div');
-                name.className = 'plushie-name';
-                name.textContent = `Plushie ${plushie.id}`;
+                const exploreLink = document.createElement('a');
+                exploreLink.href = `viewer.html?sprite=${spriteIndex}`;
+                exploreLink.className = 'explore-btn';
+                exploreLink.textContent = 'EXPLORE';
                 
-                const viewButton = document.createElement('a');
-                viewButton.className = 'view-button';
-                viewButton.href = `viewer.html?sprite=${plushie.id}`;
-                viewButton.textContent = 'View 3D Model';
-                viewButton.target = '_blank';
-                
-                card.appendChild(img);
-                card.appendChild(name);
-                card.appendChild(viewButton);
+                // Assemble the card
+                thumbnail.appendChild(img);
+                card.appendChild(thumbnail);
+                card.appendChild(exploreLink);
                 
                 return card;
             }
             
-            function filterPlushies(sheet) {
-                const cards = document.querySelectorAll('.plushie-card');
-                
-                cards.forEach(card => {
-                    if (sheet === 'all' || card.dataset.sheet === sheet) {
-                        card.style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
+            // Add the rest of the plushies (after the first 8)
+            for(let i = startIndex + 8; i <= Math.min(startIndex + plushiesPerPage, endIndex); i++) {
+                gallery.appendChild(createPlushieCard(i));
+            }
+            
+            // Add navigation handling
+            const navLinks = document.querySelectorAll('.nav a');
+            navLinks.forEach((link, index) => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Clear current selection
+                    navLinks.forEach(l => l.style.fontWeight = 'normal');
+                    this.style.fontWeight = 'bold';
+                    
+                    // Clear gallery
+                    gallery.innerHTML = '';
+                    
+                    let startSprite, endSprite;
+                    
+                    if (index === 0) { // All Plushies
+                        startSprite = 83;
+                        endSprite = Math.min(startSprite + plushiesPerPage, 182);
+                    } else { // Specific sheet
+                        const sheetStartMap = {
+                            1: 83,
+                            2: 117,
+                            3: 147,
+                            4: 168
+                        };
+                        startSprite = sheetStartMap[index];
+                        endSprite = index < 4 ? sheetStartMap[index + 1] - 1 : 182;
+                        endSprite = Math.min(startSprite + plushiesPerPage, endSprite);
+                    }
+                    
+                    // Add plushies for the selected section
+                    for(let i = startSprite; i <= endSprite; i++) {
+                        gallery.appendChild(createPlushieCard(i));
                     }
                 });
-            }
+            });
+            
+            // Set "All Plushies" as default selected
+            navLinks[0].style.fontWeight = 'bold';
         });
     </script>
 </body>
