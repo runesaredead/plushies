@@ -216,7 +216,10 @@
 
                 // Format to ensure leading zeros (now using 3 digits)
                 const formattedId = spriteId.toString().padStart(3, '0');
-                const url = `./voxels/sprite_${formattedId}.vox.json`;
+                
+                // Fix: Get the base path dynamically for GitHub Pages compatibility
+                const basePath = window.location.pathname.includes('/plushies/') ? '/plushies/' : '/';
+                const url = `${basePath}voxels/sprite_${formattedId}.vox.json`;
                 
                 loadingElement.style.display = 'block';
                 loadingElement.innerHTML = `
